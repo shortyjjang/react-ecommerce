@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Checkbox } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import { storeLoginUser } from '../../_actions/user_action';
+import axios from 'axios';
 
-export default function Login(props) {
-  const { Kakao, naver } = window;
+export default function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -14,26 +13,105 @@ export default function Login(props) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const initKakaoLogin = () => {
-    const kakaoAppKey = process.env.REACT_APP_KAKAO_APP_KEY;
-    if (!Kakao.isInitialized()) {
-      Kakao.init(kakaoAppKey);
+
+  const initKakaoLogin = async () => {
+    const loadKakaoSdk = () => {
+      return new Promise((resolve, reject) => {
+        const js = document.createElement("script");
+  
+        js.id = "kakao-sdk";
+        js.src = "//developers.kakao.com/sdk/js/kakao.min.js";
+        js.onload = resolve;
+  
+        document.body.append(js);
+      });
     }
+    await loadKakaoSdk();
+    window.Kakao?.init(process.env.REACT_APP_KAKAO_APP_KEY);
   };
 
-  const initNaverLogin = () => {
-    const naverLogin = new naver.LoginWithNaverId({
-      clientId: process.env.REACT_APP_NAVER_YES_US_SECRET_ID,
-      callbackUrl: process.env.REACT_APP_NAVER_YES_US_REDIRECT_URL,
-      isPopup: false,
-      loginButton: {
-        color: 'green',
-        type: 3,
-        height: 40,
+  const initNaverLogin = async () => {
+    const loadNaverSdk = () => {
+      return new Promise((resolve, reject) => {
+        const js = document.createElement("script");
+  
+        js.id = "naver-sdk";
+        js.src = "//static.nid.naver.com/js/naveridlogin_js_sdk_2.0.2.js";
+        js.onload = resolve;
+  
+        document.body.append(js);
+      });
+    }
+    const setNaverButton = async () => {
+      const {naver} = window
+      const naverLogin = await new naver.LoginWithNaverId({
+        clientId: process.env.REACT_APP_NAVER_YES_US_SECRET_ID,
+        callbackUrl: process.env.REACT_APP_NAVER_YES_US_REDIRECT_URL,
+        isPopup: false,
+        loginButton: {
+          color: 'green',
+          type: 3,
+          height: 40,
+        },
+      });
+      naverLogin.init();
+    }
+    await loadNaverSdk();
+    await setNaverButton()
+  };
+
+  const initAppleLogin = async () => {
+    const loadAppleSdk = () => {
+      return new Promise((resolve, reject) => {
+        const js = document.createElement("script");
+  
+        js.id = "apple-sdk";
+        js.src = "//appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js";
+        js.onload = resolve;
+  
+        document.body.append(js);
+      });
+    }
+    await loadAppleSdk()
+    await window.AppleID?.init({
+      clientId: process.env.NEXT_PUBLIC_APPLE_YESUS_CLIENT_KEY,
+      scope: "name email",
+      redirectURI: process.env.NEXT_PUBLIC_YES_US_REDIRECT_URL,
+      nonce: process.env.NEXT_PUBLIC_APPLE_YESUS_NONCE,
+      usePopup: true,
+    });
+  }
+
+  const processAppleLogin = (data) => {
+    console.log(data.detail);
+    let authorization = data.detail.authorization;
+    if (authorization.code) {
+      const accessToken = authorization.code;
+
+      requestSocialLogin(
+        "APPLE",
+        "YESUS",
+        accessToken,
+        authorization.user ? authorization.user : null
+      );
+    }
+  }
+
+  const processKakaoLogin = () => {
+    
+    window.kakao?.Auth.login({
+      success: async function (auth) {
+        if (auth.access_token) {
+          const accessToken = auth.access_token;
+          requestSocialLogin('KAKAO', 'YES_US', accessToken);
+        }
+      },
+      fail: function (e) {
+        // TODO: 로그인 실패 처리
       },
     });
-    naverLogin.init();
-  };
+  
+  }
 
   const processNaverLogin = () => {
     window.location.href.includes('access_token') && signUp();
@@ -69,29 +147,29 @@ export default function Login(props) {
     initKakaoLogin();
     initNaverLogin();
     processNaverLogin();
+    initAppleLogin()
+    
+    window.addEventListener("AppleIDSignInOnSuccess", processAppleLogin);
+    return () => window.removeEventListener('AppleIDSignInOnSuccess',  processAppleLogin);
   }, []);
 
   const login = async (e) => {
     e.preventDefault();
-    await fetch(`${process.env.REACT_APP_AUTH_API_BASIC_PATH}/form-login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+    try {
+      const request = await axios.post(`${process.env.REACT_APP_AUTH_API_BASIC_PATH}/form-login`, {
         username,
         password,
-      }),
-      credentials: 'include',
-    })
-      .then((result) => result.json())
-      .then((response) => {
-        if(response.message) {
-          alert(response.message)
-        }else{
-          loginSuccessHandler(response);
-        }
-      });
+      },{ 
+        withCredentials: true 
+      })
+      if(request.message){
+        alert(request.message)
+      }else{
+        loginSuccessHandler(request);
+      }
+    }catch(e) {
+      alert('일시적인 네트워크 문제로 로그인 하지 못했습니다.\n다시 시도해주세요')
+    }
   };
 
   const loginSuccessHandler = (response) => {
@@ -164,19 +242,7 @@ export default function Login(props) {
             <div id="naverIdLogin" className="join naver"></div>
             <button
               className="join kakao"
-              onClick={() => {
-                Kakao.Auth.login({
-                  success: async function (auth) {
-                    if (auth.access_token) {
-                      const accessToken = auth.access_token;
-                      requestSocialLogin('KAKAO', 'YES_US', accessToken);
-                    }
-                  },
-                  fail: function (e) {
-                    // TODO: 로그인 실패 처리
-                  },
-                });
-              }}
+              onClick={processKakaoLogin}
             >
               카카오 로그인
             </button>

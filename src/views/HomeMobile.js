@@ -71,21 +71,14 @@ export default function HomeMobile(props) {
         }
       </Swiper>
     </section>
-    {usboxItems && usboxItems.length > 0 && <section className="main_usbox">
+    {usboxItems?.length > 0 && <section className="main_usbox">
       <div className="main_header">
           <h2>이번 주 어스박스 채소 미리보기</h2>
           <p>이번 어스박스에는 어떤 채소들이 함께할지 미리 확인해보세요!</p>
       </div>
-      {usboxItems.length > 5 && window.innerWidth > 720 ? <Swiper className="usbox-swiper">
-        {usboxItems.map(item => <SwiperSlide>
-          <Link to={user.username ? '/myshop':'/usbox/subscribe'}>
-            <b className="thumb" style={{backgroundImage:`url(${item.pbpsImagePath})`}} ></b>
-            {item.pbpsTitle}
-          </Link>
-        </SwiperSlide>)}
-      </Swiper>
-      : usboxItems.length > 6 && window.innerWidth < 720 ? <Swiper className="usbox-swiper">
-        {usboxItems.map(item => <SwiperSlide>
+      {usboxItems?.length > 6 ?
+      <Swiper className="usbox-swiper">
+        {usboxItems.map(item => <SwiperSlide key={item.id}>
           <Link to={user.username ? '/myshop':'/usbox/subscribe'}>
             <b className="thumb" style={{backgroundImage:`url(${item.pbpsImagePath})`}} ></b>
             {item.pbpsTitle}
@@ -93,11 +86,11 @@ export default function HomeMobile(props) {
         </SwiperSlide>)}
       </Swiper>
       : <div  className="usbox-swiper"><div className="swiper-wrapper">
-        {usboxItems.map(item => <div className="swiper-slide"><Link to={user.username ? '/myshop':'/usbox/subscribe'}>
-          <b className="thumb" style={{backgroundImage:`url(${item.pbpsImagePath})`}} ></b>
-          {item.pbpsTitle}
-        </Link></div>)}
-      </div></div>}
+      {usboxItems.map(item => <div className="swiper-slide" key={item.id}><Link to={user.username ? '/myshop':'/usbox/subscribe'}>
+        <b className="thumb" style={{backgroundImage:`url(${item.pbpsImagePath})`}} ></b>
+        {item.pbpsTitle}
+      </Link></div>)}
+    </div></div>}
     </section>}
     <section className="main_prd">
       <div className="main_header">
@@ -122,7 +115,7 @@ export default function HomeMobile(props) {
           )}
           </Swiper>
       </div>}
-      {newList && <div className="main_prd_list">
+      {newList?.filter(item => item.productGubun !== '랜덤박스').length > 0 && <div className="main_prd_list">
         <h3>#BEST <Link to="/category/%EB%8B%A8%ED%92%88/25/" className="main_more">더보러 가기</Link></h3>
         <Swiper
           spaceBetween={15}
@@ -150,7 +143,7 @@ export default function HomeMobile(props) {
       </div>
       <Swiper
         spaceBetween={30}
-         breakpoints={{
+          breakpoints={{
           1040: {
             slidesPerView: 3,
           },
@@ -183,7 +176,7 @@ export default function HomeMobile(props) {
       </div>
       <div className="recipe_list">
         <ul>
-          {recipes && recipes.filter((item,index) => index < recipes.length / 2 ).map((item,index) => <li key={item.recipeId}><Link to={`/recipe/${item.recipeId}`}>
+          {recipes?.filter((item,index) => index < recipes.length / 2 ).map((item,index) => <li key={item.recipeId}><Link to={`/recipe/${item.recipeId}`}>
             <img src={`//all-to-delicious.s3.ap-northeast-2.amazonaws.com/${item.recipeRepImageUrl}`} />
             <span className="info"><small><b>난이도</b> {item.recipeDifficult}</small> <small><b>소요시간</b> {item.recipeCookingTime}</small></span>
             <strong className="title" dangerouslySetInnerHTML={{ __html: item.recipeTitle }}></strong>
@@ -192,7 +185,7 @@ export default function HomeMobile(props) {
         </ul>
         <ul>
             <li className="tags"><strong className="fcg">#오늘도맛있게<br />#구출완료</strong></li>
-            {recipes && recipes.filter((item,index) => index >= recipes.length / 2 ).map((item,index) => <li key={item.recipeId}><Link to={`/recipe/${item.recipeId}`}>
+            {recipes?.filter((item,index) => index >= recipes.length / 2 ).map((item,index) => <li key={item.recipeId}><Link to={`/recipe/${item.recipeId}`}>
               <img src={`//all-to-delicious.s3.ap-northeast-2.amazonaws.com/${item.recipeRepImageUrl}`} />
               <span className="info"><small><b>난이도</b> {item.recipeDifficult}</small> <small><b>소요시간</b> {item.recipeCookingTime}</small></span>
               <strong className="title" dangerouslySetInnerHTML={{ __html: item.recipeTitle }}></strong>
@@ -201,7 +194,7 @@ export default function HomeMobile(props) {
             )}
         </ul>
         <ul>
-            {recipes && recipes.filter((item,index) => index === 2 || index === 5 ).map((item,index) => <li key={item.recipeId}><Link to={`/recipe/${item.recipeId}`}>
+            {recipes?.filter((item,index) => index === 2 || index === 5 ).map((item,index) => <li key={item.recipeId}><Link to={`/recipe/${item.recipeId}`}>
               <img src={`//all-to-delicious.s3.ap-northeast-2.amazonaws.com/${item.recipeRepImageUrl}`} />
               <span className="info"><small><b>난이도</b> {item.recipeDifficult}</small> <small><b>소요시간</b> {item.recipeCookingTime}</small></span>
               <strong className="title" dangerouslySetInnerHTML={{ __html: item.recipeTitle }}></strong>
