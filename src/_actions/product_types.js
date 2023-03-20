@@ -1,0 +1,4 @@
+
+export const ADD_CHECKOUT = 'ADD_CHECKOUT'
+export const ADD_WISHLIST = 'ADD_WISHLIST'
+export const REMOVE_WISHLIST = 'REMOVE_WISHLIST'

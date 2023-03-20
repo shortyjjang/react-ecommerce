@@ -1,0 +1,10 @@
+export const STORE_LOGIN_USER = 'STORE_LOGIN_USER';
+export const REMOVE_LOGIN_USER = 'REMOVE_LOGIN_USER';
+export const REGISTER_USER = 'REGISTER_USER';
+export const AUTH_USER = 'AUTH_USER';
+export const GET_MY_DATA = 'GET_MY_DATA';
+export const GET_MY_EARTH = 'GET_MY_EARTH';
+export const LOGIN_USER = 'LOGIN_USER';
+export const LOGOUT_USER = 'LOGOUT_USER'
+export const GET_CART_ITEMS = 'GET_CART_ITEMS'
+export const ADD_TO_CART = 'ADD_TO_CART'
